@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Generate C source with global variables embedding binary/text file contents.
 """
@@ -57,7 +58,7 @@ def file2c(source_file, output_directory=None, symbol=None, text=False):
             #endif
 
             extern const {char_type} *{symbol};
-            extern size_t {symbol}_size;
+            extern const size_t {symbol}_size;
 
             #ifdef __cplusplus
             }}
@@ -76,7 +77,7 @@ def file2c(source_file, output_directory=None, symbol=None, text=False):
             static const {char_type} _data[] = {c_contents};
 
             const {char_type} *{symbol} = _data;
-            size_t {symbol}_size = sizeof(_data){minus_one_on_text};
+            const size_t {symbol}_size = sizeof(_data){minus_one_on_text};
         """).format(
             char_type=char_type,
             symbol=symbol,

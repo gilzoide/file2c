@@ -34,11 +34,9 @@ function(add_file2c arg_file2c_TARGET)
   endif()
 
   get_filename_component(arg_file2c_INPUT_ABSOLUTE "${arg_file2c_INPUT}" ABSOLUTE)
-  set(arg_file2c_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${arg_file2c_TARGET}")
 
   set(file2c_py_args
     "${arg_file2c_INPUT_ABSOLUTE}"
-    --output-dir "${arg_file2c_OUTPUT_DIR}"
     --symbol "${arg_file2c_SYMBOL}"
   )
   if(arg_file2c_TEXT)
@@ -46,19 +44,29 @@ function(add_file2c arg_file2c_TARGET)
   endif()
 
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(arg_file2c_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${arg_file2c_TARGET}")
+  set(arg_file2c_C_OUTPUT "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.c")
+  set(arg_file2c_H_OUTPUT "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.h")
   add_custom_command(
     OUTPUT
-      "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.c"
-      "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.h"
+      "${arg_file2c_C_OUTPUT}"
     COMMAND
-      ${Python3_EXECUTABLE} "${_file2c_py}" ${file2c_py_args}
+      ${Python3_EXECUTABLE} "${_file2c_py}" ${file2c_py_args} -o "${arg_file2c_C_OUTPUT}"
     DEPENDS
       "${_file2c_py}"
       "${arg_file2c_INPUT}"
   )
+  add_custom_command(
+    OUTPUT
+      "${arg_file2c_H_OUTPUT}"
+    COMMAND
+      ${Python3_EXECUTABLE} "${_file2c_py}" ${file2c_py_args} -o "${arg_file2c_H_OUTPUT}" --header
+    DEPENDS
+      "${_file2c_py}"
+  )
   add_library(${arg_file2c_TARGET} OBJECT
-    "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.h"
-    "${arg_file2c_OUTPUT_DIR}/${arg_file2c_SYMBOL}.c"
+    "${arg_file2c_H_OUTPUT}"
+    "${arg_file2c_C_OUTPUT}"
   )
   target_include_directories(${arg_file2c_TARGET}
     PUBLIC "${arg_file2c_OUTPUT_DIR}"

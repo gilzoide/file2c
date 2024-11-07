@@ -53,6 +53,7 @@ function(add_file2c arg_file2c_TARGET)
     COMMAND
       ${Python3_EXECUTABLE} "${_file2c_py}" ${file2c_py_args}
     DEPENDS
+      "${_file2c_py}"
       "${arg_file2c_INPUT}"
   )
   add_library(${arg_file2c_TARGET} OBJECT

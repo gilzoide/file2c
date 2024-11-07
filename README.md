@@ -14,8 +14,8 @@ Python script that generates C source files with global variables embedding bina
 
 
 ## Usage
-```sh
-python file2c.py [-h] [-o OUTPUT] [-s SYMBOL] [--header] [--text] INPUT
+```
+python file2c.py INPUT [-o OUTPUT] [-s SYMBOL] [--text] [--header]
 ```
 
 
@@ -32,10 +32,18 @@ python file2c.py file.txt -o file.h --header
 #   `const size_t file_size`: file size
 python file2c.py file.txt --text -o file.c
 python file2c.py file.txt --text -o file.h --header
+
+# Generate `file.c` and `file.h` from binary contents of `file.txt`,
+# customizing the variable symbol name to "contents":
+#   `const unsigned char *contents`: file contents as a byte string
+#   `const size_t contents_size`: file size
+python file2c.py file.txt --symbol contents -o file.c
+python file2c.py file.txt --symbol contents -o file.h --header
 ```
 
 
 ## Integrating with CMake
+In CMake:
 ```cmake
 # 1. Include file2c.cmake script
 include(path/to/file2c.cmake)
@@ -44,12 +52,25 @@ include(path/to/file2c.cmake)
 add_file2c(
   new_library_target
   INPUT input_file_to_be_embedded
-  # Optional: choose the name of the global variable
+  # Optional: choose the name of the global variable/header file
+  # Defaults to input file name
   SYMBOL some_c_symbol
-  # Pass "TEXT" to embed file contents as text
+  # Pass "TEXT" to embed contents as text, omit for binary contents
   TEXT
 )
 
 # 3. Link the generated library with other targets
 target_link_libraries(my_existing_target new_library_target)
+```
+
+In C/C++:
+```c
+// 1. Include generated header
+#include <some_c_symbol.h>
+
+// 2. Use the embedded contents
+void print_contents() {
+  printf("Content: %s\n", some_c_symbol);
+  printf("Size: %lu\n", some_c_symbol_size);
+}
 ```

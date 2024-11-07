@@ -32,9 +32,9 @@ def file2c(
         os.makedirs(dirname, exist_ok=True)
 
     # Write header file
-    if header:
-        with (open(output, "w") if output else sys.stdout) as f:
-            f.write(dedent("""
+    with open(output, "w") if output else sys.stdout as output_file:
+        if header:
+            output_file.write(dedent("""
                 #pragma once
 
                 #include <stdlib.h>
@@ -53,11 +53,16 @@ def file2c(
                 char_type="char" if text else "unsigned char",
                 name=symbol,
             ).lstrip())
-    # Write implementation file
-    else:
-        # Read file contents and format them in a way C will understand
-        with open(source_file, "r" if text else "rb") as f:
-            contents = f.read()
+        # Write implementation file
+        else:
+            with (
+                open(source_file, "r" if text else "rb")
+                if source_file != "-"
+                else sys.stdin
+            ) as f:
+                contents = f.read()
+
+            # Read file contents and format them in a way C will understand
             if text:
                 c_contents = '\n"' + (
                     contents
@@ -73,8 +78,7 @@ def file2c(
                     c_contents += ",\n"
                 c_contents += "}"
 
-        with (open(output, "w") if output else sys.stdout) as f:
-            f.write(dedent("""
+            output_file.write(dedent("""
                 #include <stdlib.h>
 
                 static const {char_type} _data[] = {c_contents};
@@ -109,12 +113,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "input",
-        help="Input file",
+        help="Input file. Pass \"-\" to use data from stdin.",
     )
     parser.add_argument(
         "-o",
         "--output",
-        help="Output file",
+        help="Output file. Default to stdout.",
     )
     parser.add_argument(
         "-s",

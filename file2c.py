@@ -20,7 +20,7 @@ def file2c(
     Generate C source with global variables embedding binary/text file contents
 
     :param source_file: Source file path.
-    :param output_directory: Output directory where source files are generated.
+    :param output: Output file path. Defaults to `sys.stdout`.
     :param symbol: Global variable symbol name. Defaults to source file name.
     :param header: Generate header content instead of implementation.
     :param text: If true, source file is read as text instead of binary
@@ -31,8 +31,8 @@ def file2c(
     if output and (dirname := os.path.dirname(output)):
         os.makedirs(dirname, exist_ok=True)
 
-    # Write header file
     with open(output, "w") if output else sys.stdout as output_file:
+        # Write header file
         if header:
             output_file.write(dedent("""
                 #pragma once
